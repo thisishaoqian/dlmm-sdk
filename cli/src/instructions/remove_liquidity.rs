@@ -143,11 +143,17 @@ pub async fn execute_remove_liquidity<C: Deref<Target = impl Signer> + Clone>(
 
     let compute_budget_ix = ComputeBudgetInstruction::set_compute_unit_limit(1_400_000);
 
+    // 创建自定义配置以增加等待时间
+    let mut extended_config = transaction_config.clone();
+    extended_config.max_retries = Some(20); 
+    extended_config.skip_preflight = false; 
+    extended_config.preflight_commitment = Some(anchor_client::solana_sdk::commitment_config::CommitmentConfig::confirmed().commitment);
+
     let request_builder = program.request();
     let signature = request_builder
         .instruction(compute_budget_ix)
         .instruction(remove_liquidity_ix)
-        .send_with_spinner_and_config(transaction_config)
+        .send_with_spinner_and_config(extended_config)
         .await;
 
     println!("Remove Liquidity. Signature: {:#?}", signature);
