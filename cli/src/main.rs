@@ -105,6 +105,10 @@ async fn main() -> Result<()> {
             execute_remove_liquidity(params, &program, transaction_config, compute_unit_price_ix)
                 .await?;
         }
+        DLMMCommand::AddAndRemoveLiquidity(params) => {
+            execute_add_and_remove_liquidity(params, &program, transaction_config, compute_unit_price_ix)
+                .await?;
+        }
         DLMMCommand::SwapExactIn(params) => {
             execute_swap(params, &program, transaction_config).await?;
         }

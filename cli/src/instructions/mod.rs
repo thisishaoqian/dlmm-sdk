@@ -1,6 +1,9 @@
 pub mod add_liquidity;
 pub use add_liquidity::*;
 
+pub mod add_and_remove_liquidity;
+pub use add_and_remove_liquidity::*;
+
 pub mod claim_fee;
 pub use claim_fee::*;
 

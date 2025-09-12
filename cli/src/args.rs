@@ -89,6 +89,8 @@ pub enum DLMMCommand {
     AddLiquidity(AddLiquidityParams),
     /// Remove liquidity from the position of the given liquidity pair.
     RemoveLiquidity(RemoveLiquidityParams),
+    /// Add and remove liquidity in a single transaction.
+    AddAndRemoveLiquidity(AddAndRemoveLiquidityParams),
     /// Trade token X -> Y, or vice versa.
     SwapExactIn(SwapExactInParams),
     SwapExactOut(SwapExactOutParams),
