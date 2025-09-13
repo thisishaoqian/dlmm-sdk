@@ -1,6 +1,8 @@
 use crate::*;
 use commons::dlmm::accounts::{LbPair, PositionV2};
 use instructions::*;
+use instructions::utils::get_token_account_balance;
+use serde_json::json;
 
 #[derive(Debug, Parser)]
 pub struct AddAndRemoveLiquidityParams {
@@ -121,6 +123,14 @@ pub async fn execute_add_and_remove_liquidity<C: Deref<Target = impl Signer> + C
     )
     .await?;
 
+    // Get token balances before transaction
+    let token_x_balance_before = get_token_account_balance(&rpc_client, user_token_x).await?;
+    let token_y_balance_before = get_token_account_balance(&rpc_client, user_token_y).await?;
+    
+    // Store balances before transaction for final JSON output
+    let token_x_before = token_x_balance_before;
+    let token_y_before = token_y_balance_before;
+
     let (bin_array_bitmap_extension, _bump) = derive_bin_array_bitmap_extension(lb_pair);
     let bin_array_bitmap_extension = rpc_client
         .get_account(&bin_array_bitmap_extension)
@@ -236,11 +246,22 @@ pub async fn execute_add_and_remove_liquidity<C: Deref<Target = impl Signer> + C
         .instruction(add_liquidity_ix)
         .instruction(remove_liquidity_ix)
         .send_with_spinner_and_config(extended_config)
-        .await;
+        .await?;
 
-    println!("Add and Remove Liquidity. Signature: {:#?}", signature);
-
-    signature?;
+    // Get token balances after transaction
+    let token_x_balance_after = get_token_account_balance(&rpc_client, user_token_x).await?;
+    let token_y_balance_after = get_token_account_balance(&rpc_client, user_token_y).await?;
+    
+    // Create simplified JSON output
+    let result = json!({
+        "signature": signature.to_string(),
+        "token_x_before": token_x_before,
+        "token_x_after": token_x_balance_after,
+        "token_y_before": token_y_before,
+        "token_y_after": token_y_balance_after
+    });
+    
+    println!("{}", serde_json::to_string_pretty(&result)?);
 
     Ok(())
 }

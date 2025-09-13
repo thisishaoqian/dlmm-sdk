@@ -50,8 +50,6 @@ async fn main() -> Result<()> {
     let payer =
         read_keypair_file(cli.config_override.wallet).expect("Wallet keypair file not found");
 
-    println!("Wallet {:#?}", payer.pubkey());
-
     let commitment_config = CommitmentConfig::confirmed();
 
     let client = Client::new_with_options(

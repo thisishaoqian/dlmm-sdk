@@ -9,6 +9,7 @@ use anchor_spl::{
     associated_token::get_associated_token_address_with_program_id,
     token::spl_token,
     token_2022::spl_token_2022::extension::{transfer_hook, StateWithExtensions},
+    token_interface::TokenAccount,
 };
 use num_integer::Integer;
 use solana_sdk::program_pack::Pack;
@@ -147,6 +148,24 @@ pub async fn get_or_create_ata<C: Deref<Target = impl Signer> + Clone>(
     }
 
     Ok(user_ata)
+}
+
+/// Get the balance of a token account
+pub async fn get_token_account_balance(
+    rpc_client: &RpcClient,
+    token_account: Pubkey,
+) -> Result<u64> {
+    let account = rpc_client.get_account(&token_account).await?;
+    
+    // Check if it's a Token-2022 account or regular SPL Token account
+    if account.owner.eq(&spl_token::ID) {
+        let token_account_state = spl_token::state::Account::unpack(account.data.as_ref())?;
+        Ok(token_account_state.amount)
+    } else {
+        // For Token-2022 accounts, we need to use the interface
+        let token_account_state = TokenAccount::try_deserialize(&mut account.data.as_ref())?;
+        Ok(token_account_state.amount)
+    }
 }
 
 pub struct SwapQuoteAccounts {
